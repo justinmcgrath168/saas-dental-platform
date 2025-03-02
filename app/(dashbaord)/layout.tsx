@@ -3,10 +3,11 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import { prisma } from "@/lib/prisma";
+import { SessionProvider } from "next-auth/react";
 
 export default async function DashboardLayout({
   children,
@@ -75,25 +76,27 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar tenant={user.organization.tenant} userRole={user.role} />
+    <SessionProvider session={session}>
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar */}
+        <Sidebar tenant={user.organization.tenant} userRole={user.role} />
 
-      {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Header
-          user={session.user}
-          organization={user.organization}
-          tenant={user.organization.tenant}
-        />
+        {/* Main content */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <Header
+            user={session.user}
+            organization={user.organization}
+            tenant={user.organization.tenant}
+          />
 
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-4">
-          <div className="mx-auto max-w-7xl">{children}</div>
-        </main>
+          <main className="flex-1 overflow-y-auto bg-gray-50 p-4">
+            <div className="mx-auto max-w-7xl">{children}</div>
+          </main>
+        </div>
+
+        {/* Toaster for notifications */}
+        <Toaster />
       </div>
-
-      {/* Toaster for notifications */}
-      <Toaster />
-    </div>
+    </SessionProvider>
   );
 }

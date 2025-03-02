@@ -18,7 +18,6 @@ import {
   CreditCard,
   Building2,
   Microscope,
-  Hammer,
   FileText,
   Box,
   ShoppingBag,
@@ -26,10 +25,10 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
-  Tooth,
   BadgeHelp,
   BarChart,
 } from "lucide-react";
+import Image from "next/image";
 
 interface SidebarProps {
   tenant: {
@@ -296,7 +295,7 @@ export default function Sidebar({ tenant, userRole }: SidebarProps) {
             className="flex items-center space-x-2 overflow-hidden"
           >
             {tenant.logoUrl ? (
-              <img
+              <Image
                 src={tenant.logoUrl}
                 alt={tenant.name}
                 className="h-8 w-8 object-contain"

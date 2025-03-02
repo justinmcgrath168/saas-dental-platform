@@ -1,3 +1,4 @@
+https://1.gpt600.com/chat/bf676a44-7cc3-49a3-aec5-a286a9cc2d9a
 dental-management-saas/
 │
 ├── .github/ # GitHub Actions and CI/CD configuration

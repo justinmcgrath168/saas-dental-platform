@@ -30,7 +30,11 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
           },
           include: {
-            organization: true,
+            organization: {
+              include: {
+                tenant: true,
+              },
+            },
             permissions: {
               include: {
                 permission: true,

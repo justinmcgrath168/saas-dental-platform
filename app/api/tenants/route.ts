@@ -184,6 +184,7 @@ export async function POST(req: NextRequest) {
     );
 
     const result = await prisma.$transaction(async (tx) => {
+      console.log("Creating tenant...");
       // Create tenant
       const tenant = await tx.tenant.create({
         data: {
@@ -195,6 +196,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Create subscription
+      console.log("Creating subscription...");
       const subscription = await tx.subscription.create({
         data: {
           tenantId: tenant.id,
@@ -210,6 +212,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      console.log("Creating organization...");
       // Create default organization (dental clinic)
       const organization = await tx.organization.create({
         data: {
@@ -219,6 +222,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      console.log("Creating location...");
       // Create default location
       const location = await tx.location.create({
         data: {
@@ -232,6 +236,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      console.log("Creating admin user...");
       // Create admin user
       const user = await tx.user.create({
         data: {
@@ -253,19 +258,27 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      console.log("Fetching permissions...");
       // Set up default permissions for admin
       const allPermissions = await tx.permission.findMany();
 
-      for (const permission of allPermissions) {
-        await tx.userPermission.create({
-          data: {
-            userId: user.id,
-            permissionId: permission.id,
-            granted: true,
-          },
+      const permissionsData = allPermissions.map((permission) => ({
+        userId: user.id,
+        permissionId: permission.id,
+        granted: true,
+      }));
+
+      // Log the data
+      console.log("Permissions data to create:", permissionsData);
+
+      // Create all permissions at once
+      if (permissionsData.length > 0) {
+        await tx.userPermission.createMany({
+          data: permissionsData,
         });
       }
 
+      console.log("Transaction completed successfully");
       return {
         tenant,
         organization,

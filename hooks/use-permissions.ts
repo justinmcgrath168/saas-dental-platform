@@ -127,26 +127,26 @@ export function useHasPermission(requiredPermission: PermissionCode): boolean {
  * const ProtectedUserList = withPermission(UserList, 'users:list', AccessDenied);
  * ```
  */
-export function withPermission<P extends object>(
-  Component: React.ComponentType<P>,
-  permission: PermissionCode,
-  FallbackComponent?: React.ComponentType<any>
-) {
-  return function PermissionGuard(props: P) {
-    const { can, isLoading } = usePermissions();
+// export function withPermission<P extends object>(
+//   Component: React.ComponentType<P>,
+//   permission: PermissionCode,
+//   FallbackComponent?: React.ComponentType<any>
+// ) {
+//   return function PermissionGuard(props: P) {
+//     const { can, isLoading } = usePermissions();
 
-    if (isLoading) {
-      return null; // Or a loading spinner
-    }
+//     if (isLoading) {
+//       return null; // Or a loading spinner
+//     }
 
-    if (can(permission)) {
-      return <Component {...props} />;
-    }
+//     if (can(permission)) {
+//       return <Component {...props} />;
+//     }
 
-    if (FallbackComponent) {
-      return <FallbackComponent />;
-    }
+//     if (FallbackComponent) {
+//       return <FallbackComponent />;
+//     }
 
-    return null;
-  };
-}
+//     return null;
+//   };
+// }
