@@ -1,0 +1,225 @@
+// This is your Prisma schema file for the Dental Management Ecosystem
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tenant model for multi-tenancy support
+model Tenant {
+  id                   String    @id @default(cuid())
+  name                 String
+  subdomain            String    @unique
+  logoUrl              String?
+  primaryColor         String?   @default("#2563eb") // Default blue color
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relationships
+  organizations        Organization[]
+  subscriptions        Subscription[]
+}
+
+// Subscription plan model
+model Subscription {
+  id                   String    @id @default(cuid())
+  tenantId             String
+  planType             PlanType
+  startDate            DateTime
+  endDate              DateTime?
+  isActive             Boolean   @default(true)
+  paymentMethod        String?
+  paymentReference     String?
+  autoRenew            Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relationships
+  tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+enum PlanType {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+  CUSTOM
+}
+
+// Organization model (a tenant can have multiple organizations like clinics, labs, etc.)
+model Organization {
+  id                   String    @id @default(cuid())
+  tenantId             String
+  name                 String
+  type                 OrgType
+  address              String?
+  city                 String?
+  state                String?
+  zipCode              String?
+  country              String?   @default("US")
+  phone                String?
+  email                String?
+  website              String?
+  taxId                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relationships
+  tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users                User[]
+  locations            Location[]
+}
+
+enum OrgType {
+  DENTAL_CLINIC
+  DENTAL_LAB
+  IMAGING_CENTER
+  SUPPLIER
+}
+
+// Physical location model (an organization can have multiple locations)
+model Location {
+  id                   String    @id @default(cuid())
+  organizationId       String
+  name                 String
+  address              String
+  city                 String
+  state                String
+  zipCode              String
+  country              String    @default("US")
+  phone                String?
+  email                String?
+  isMain               Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relationships
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users                UserLocation[]
+}
+
+// Core user model integrated with NextAuth
+model User {
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String    @unique
+  emailVerified        DateTime?
+  password             String?
+  image                String?
+  organizationId       String
+  role                 UserRole
+  isActive             Boolean   @default(true)
+  lastLogin            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relationships
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  locations            UserLocation[]
+  accounts             Account[]
+  sessions             Session[]
+  permissions          UserPermission[]
+}
+
+// NextAuth Account model for OAuth providers
+model Account {
+  id                   String    @id @default(cuid())
+  userId               String
+  type                 String
+  provider             String
+  providerAccountId    String
+  refresh_token        String?   @db.Text
+  access_token         String?   @db.Text
+  expires_at           Int?
+  token_type           String?
+  scope                String?
+  id_token             String?   @db.Text
+  session_state        String?
+  
+  // Relationships
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+}
+
+// NextAuth Session model
+model Session {
+  id                   String    @id @default(cuid())
+  sessionToken         String    @unique
+  userId               String
+  expires              DateTime
+  
+  // Relationships
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Many-to-many relationship between users and locations
+model UserLocation {
+  id                   String    @id @default(cuid())
+  userId               String
+  locationId           String
+  isPrimary            Boolean   @default(false)
+  
+  // Relationships
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location             Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, locationId])
+}
+
+// User roles enum
+enum UserRole {
+  SUPER_ADMIN          // System-wide admin
+  TENANT_ADMIN         // Admin for the entire tenant
+  ORG_ADMIN            // Admin for a specific organization
+  LOCATION_ADMIN       // Admin for a specific location
+  DENTIST
+  HYGIENIST
+  ASSISTANT
+  FRONT_DESK
+  LAB_MANAGER
+  LAB_TECHNICIAN
+  RADIOLOGIST
+  IMAGING_TECH
+  INVENTORY_MANAGER
+  ACCOUNTING
+  PATIENT              // For patient portal access
+}
+
+// Granular permissions model
+model Permission {
+  id                   String    @id @default(cuid())
+  code                 String    @unique
+  name                 String
+  description          String?
+  module               String
+  
+  // Relationships
+  userPermissions      UserPermission[]
+}
+
+model UserPermission {
+  id                   String    @id @default(cuid())
+  userId               String
+  permissionId         String
+  granted              Boolean   @default(true)
+  
+  // Relationships
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission           Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, permissionId])
+}
+
+// VerificationToken model for email verification, password reset, etc.
+model VerificationToken {
+  identifier           String
+  token                String    @unique
+  expires              DateTime
+  
+  @@unique([identifier, token])
+}
