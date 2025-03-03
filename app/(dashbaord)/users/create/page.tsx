@@ -125,11 +125,16 @@ export default function CreateUserPage() {
     }
 
     if (!session.user.permissions.includes("users:create")) {
-      toast({
-        title: "Permission Denied",
-        description: "You do not have permission to create users.",
-        variant: "destructive",
-      });
+      // toast({
+      //   title: "Permission Denied",
+      //   description: "You do not have permission to create users.",
+      //   variant: "destructive",
+      // });
+      toast(
+        "Permission Denied",
+        "You do not have permission to create users.",
+        "destructive"
+      );
       router.push("/users");
     }
   }, [session, status, router]);
@@ -163,11 +168,12 @@ export default function CreateUserPage() {
         }
       } catch (error) {
         console.error("Error fetching organizations:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load organizations",
-          variant: "destructive",
-        });
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to load organizations",
+        //   variant: "destructive",
+        // });
+        toast("Error", "Failed to load organizations", "destructive");
       }
     }
 
@@ -198,11 +204,12 @@ export default function CreateUserPage() {
         form.setValue("primaryLocationId", undefined);
       } catch (error) {
         console.error("Error fetching locations:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load locations",
-          variant: "destructive",
-        });
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to load locations",
+        //   variant: "destructive",
+        // });
+        toast("Error", "Failed to load locations", "destructive");
       }
     }
 
@@ -237,11 +244,12 @@ export default function CreateUserPage() {
         setPermissionGroups(grouped);
       } catch (error) {
         console.error("Error fetching permissions:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load permissions",
-          variant: "destructive",
-        });
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to load permissions",
+        //   variant: "destructive",
+        // });
+        toast("Error", "Failed to load permissions", "destructive");
       }
     }
 
@@ -378,20 +386,22 @@ export default function CreateUserPage() {
         throw new Error(errorData.error || "Failed to create user");
       }
 
-      toast({
-        title: "Success",
-        description: "User created successfully",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "User created successfully",
+      // });
+      toast("Success", "User created successfully");
 
       // Redirect to user list
       router.push("/users");
     } catch (error: any) {
       console.error("Error creating user:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create user",
-        variant: "destructive",
-      });
+      // toast({
+      //   title: "Error",
+      //   description: error.message || "Failed to create user",
+      //   variant: "destructive",
+      // });
+      toast("Error", error.message || "Failed to create user", "destructive");
     } finally {
       setLoading(false);
     }
